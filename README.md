@@ -169,4 +169,5 @@ stats_reset       |
 - <https://www.cloudbees.com/blog/tuning-postgresql-with-pgbench>
 - <https://www.postgresql.org/docs/15/pgbench.html>
 - <https://www.postgresql.org/docs/15/logical-replication.html>
+- <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
