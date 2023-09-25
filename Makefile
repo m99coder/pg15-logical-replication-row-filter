@@ -39,15 +39,29 @@ psqls: ## Connect to source
 psqlt: ## Connect to target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
-.PHONY: pgbinit
-pgbinit: ## Initialize databases for pgbench
+.PHONY: pgbench
+pgbench: ## Run pgbench on source
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
-	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
-
-.PHONY: pgbs
-pgbs: ## Run pgbench on source
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I dtvp -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
-.PHONY: pgbt
-pgbt: ## Run pgbench on target
-	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+.PHONY: pgbenchdrop
+pgbenchdrop: ## Drop tables created by pgbench
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I d -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I d -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: pgpub
+pgpub: ## Create publication
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/repl_pub.sql"
+
+.PHONY: pgpubdrop
+pgpubdrop: ## Drop publication
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -c 'DROP PUBLICATION IF EXISTS pub_bid_1' -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: pgsub
+pgsub: ## Create subscription
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/repl_sub.sql"
+
+.PHONY: pgsubdrop
+pgsubdrop: ## Drop subscription
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -c 'DROP SUBSCRIPTION IF EXISTS sub_bid_1' -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"

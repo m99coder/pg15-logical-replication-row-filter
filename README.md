@@ -37,12 +37,15 @@ Usage:
   logs              Show service logs
   ps                Show running services
   bashs             Run interactive shell in source
-  basht             Run interactive shell in source
+  basht             Run interactive shell in target
   psqls             Connect to source
   psqlt             Connect to target
-  pgbinit           Initialize databases for pgbench
-  pgbs              Run pgbench on source
-  pgbt              Run pgbench on target
+  pgbench           Run pgbench on source
+  pgbenchdrop       Drop tables created by pgbench
+  pgpub             Create publication
+  pgpubdrop         Drop publication
+  pgsub             Create subscription
+  pgsubdrop         Drop subscription
 ```
 
 ## Resources
