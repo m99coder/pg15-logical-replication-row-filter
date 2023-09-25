@@ -48,6 +48,7 @@ Usage:
   ps                Show running services
   psqls             Connect to source
   psqlt             Connect to target
+  pgbinit           Initialize databases for pgbench
 ```
 
 ## Resources
