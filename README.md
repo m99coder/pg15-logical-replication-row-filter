@@ -35,6 +35,7 @@ Usage:
   stop              Stop services
   clean             Clean up services
   logs              Show service logs
+  ps                Show running services
 ```
 
 ## Resources

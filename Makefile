@@ -18,3 +18,7 @@ clean: ## Clean up services
 .PHONY: logs
 logs: ## Show service logs
 	docker compose logs
+
+.PHONY: ps
+ps: ## Show running services
+	docker compose ps
