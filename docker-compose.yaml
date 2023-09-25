@@ -1,10 +1,16 @@
+version: "3.8"
 services:
   pg15-repl-source:
     build:
       context: .
     image: postgres:${PGVERSION}
     container_name: ${CONTAINER_NAME_PREFIX}-source
-    command: [ "postgres", "-c", "config_file=/etc/postgres.conf" ]
+    command:
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgres.conf"
+      ]
     environment:
       PGDATA: ${PGDATA_BASEDIR}/source
       POSTGRES_DB: ${POSTGRES_DB}
@@ -12,11 +18,13 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - source:${PGDATA_BASEDIR}/source
-      - ${PWD}/postgres.conf:/etc/postgres.conf
-      - ${PWD}/pg_hba.conf:/etc/pg_hba.conf
+      - ${PWD}/postgres.conf:/etc/postgresql/postgres.conf
+      - ${PWD}/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ${PWD}/sql:/opt/sql
     ports:
       - ${SOURCE_PORT}:5432
+    networks:
+      - pg15-repl
     restart: unless-stopped
     healthcheck:
       test:
@@ -32,7 +40,12 @@ services:
       context: .
     image: postgres:${PGVERSION}
     container_name: ${CONTAINER_NAME_PREFIX}-target
-    command: [ "postgres", "-c", "config_file=/etc/postgres.conf" ]
+    command:
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgres.conf"
+      ]
     environment:
       PGDATA: ${PGDATA_BASEDIR}/source
       POSTGRES_DB: ${POSTGRES_DB}
@@ -40,11 +53,13 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - target:${PGDATA_BASEDIR}/target
-      - ${PWD}/postgres.conf:/etc/postgres.conf
-      - ${PWD}/pg_hba.conf:/etc/pg_hba.conf
+      - ${PWD}/postgres.conf:/etc/postgresql/postgres.conf
+      - ${PWD}/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ${PWD}/sql:/opt/sql
     ports:
       - ${TARGET_PORT}:5432
+    networks:
+      - pg15-repl
     restart: unless-stopped
     healthcheck:
       test:
@@ -57,4 +72,10 @@ services:
       retries: 5
 volumes:
   source:
+    name: ${CONTAINER_NAME_PREFIX}-source
   target:
+    name: ${CONTAINER_NAME_PREFIX}-target
+networks:
+  pg15-repl:
+    name: ${CONTAINER_NAME_PREFIX}
+    driver: bridge
