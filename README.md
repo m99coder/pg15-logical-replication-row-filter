@@ -40,4 +40,4 @@ Usage:
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
-- <https://github.com/peter-evans/docker-compose-healthcheck>
+- <https://peterevans.dev/posts/how-to-wait-for-container-x-before-starting-y/>
