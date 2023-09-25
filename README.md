@@ -4,9 +4,7 @@
 
 ## Makefile
 
-```shell
-→ make help
-
+```text
 Usage:
   make <target>
   help              Display this help
@@ -34,21 +32,21 @@ Usage:
 
 ```shell
 # start both database instances
-→ make start
+make start
 
 # create schema in both instances
 # populate data into source
 # create publication
-→ make prepare
+make prepare
 
 # create subscription and run replication
-→ make replicate
+make replicate
 
 # reset data in both instances
-→ make reset
+make reset
 
 # stop both database instances
-→ make stop
+make stop
 ```
 
 ## Postgres
@@ -141,7 +139,7 @@ subslotname      | sub_bid_1
 subsynccommit    | off
 subpublications  | {pub_bid_1}
 
-demo=# select * from pg_stat_subscription;
+demo=# SELECT * FROM pg_stat_subscription;
 -[ RECORD 1 ]---------+------------------------------
 subid                 | 16445
 subname               | sub_bid_1
@@ -153,7 +151,7 @@ last_msg_receipt_time | 2023-09-25 18:50:35.481557+00
 latest_end_lsn        | 1/28871700
 latest_end_time       | 2023-09-25 18:50:35.481432+00
 
-demo=# select * from pg_stat_subscription_stats;
+demo=# SELECT * FROM pg_stat_subscription_stats;
 -[ RECORD 1 ]-----+----------
 subid             | 16445
 subname           | sub_bid_1
