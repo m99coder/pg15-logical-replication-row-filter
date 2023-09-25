@@ -49,9 +49,12 @@ Usage:
   psqls             Connect to source
   psqlt             Connect to target
   pgbinit           Initialize databases for pgbench
+  pgbs              Run pgbench on source
+  pgbt              Run pgbench on target
 ```
 
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
 - <https://peterevans.dev/posts/how-to-wait-for-container-x-before-starting-y/>
+- <https://www.cloudbees.com/blog/tuning-postgresql-with-pgbench>

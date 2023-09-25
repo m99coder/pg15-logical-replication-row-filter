@@ -29,9 +29,17 @@ psqls: ## Connect to source
 
 .PHONY: psqlt
 psqlt: ## Connect to target
-	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
 .PHONY: pgbinit
 pgbinit: ## Initialize databases for pgbench
-	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
-	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s 50 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: pgbs
+pgbs: ## Run pgbench on source
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: pgbt
+pgbt: ## Run pgbench on target
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
