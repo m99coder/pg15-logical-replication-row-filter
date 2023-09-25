@@ -23,18 +23,6 @@
     --volumes
 ```
 
-## Postgres
-
-```shell
-# connect to source database
-→ PGPASSWORD=$(echo $POSTGRES_PASSWORD) psql \
-    -h localhost -p ${SOURCE_PORT} -U ${POSTGRES_USER} ${POSTGRES_DB}
-
-# connect to target database
-→ PGPASSWORD=$(echo $POSTGRES_PASSWORD) psql \
-    -h localhost -p ${TARGET_PORT} -U ${POSTGRES_USER} ${POSTGRES_DB}
-```
-
 ## Makefile
 
 ```shell
