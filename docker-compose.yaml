@@ -13,6 +13,7 @@ services:
     volumes:
       - source:${PGDATA_BASEDIR}/source
       - ${PWD}/postgres.conf:/etc/postgres.conf
+      - ${PWD}/pg_hba.conf:/etc/pg_hba.conf
       - ${PWD}/sql:/opt/sql
     ports:
       - ${SOURCE_PORT}:5432
@@ -40,6 +41,7 @@ services:
     volumes:
       - target:${PGDATA_BASEDIR}/target
       - ${PWD}/postgres.conf:/etc/postgres.conf
+      - ${PWD}/pg_hba.conf:/etc/pg_hba.conf
       - ${PWD}/sql:/opt/sql
     ports:
       - ${TARGET_PORT}:5432
