@@ -28,7 +28,7 @@ bashs: ## Run interactive shell in source
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash
 
 .PHONY: basht
-basht: ## Run interactive shell in source
+basht: ## Run interactive shell in target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash
 
 .PHONY: psqls

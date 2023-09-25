@@ -48,6 +48,8 @@ Usage:
   clean             Clean up services
   logs              Show service logs
   ps                Show running services
+  bashs             Run interactive shell in source
+  basht             Run interactive shell in source
   psqls             Connect to source
   psqlt             Connect to target
   pgbinit           Initialize databases for pgbench
@@ -62,3 +64,4 @@ Usage:
 - <https://www.cloudbees.com/blog/tuning-postgresql-with-pgbench>
 - <https://www.postgresql.org/docs/current/pgbench.html>
 - <https://www.postgresql.org/docs/current/logical-replication-row-filter.html>
+- <https://matthewmoisen.com/blog/posgresql-logical-replication/>
