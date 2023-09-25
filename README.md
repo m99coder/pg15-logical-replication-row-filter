@@ -2,27 +2,6 @@
 
 > PoC for using the Postgres 15 built-in row filter for logical replication
 
-## Docker Compose
-
-```shell
-# force recreation of containers and detach them
-→  docker compose up \
-    --detach \
-    --force-recreate
-
-# show running services
-→ docker compose ps
-
-# show and follow logs
-→ docker compose logs --follow
-
-# stop services and clean up
-→ docker compose down \
-    --remove-orphans \
-    --rmi all \
-    --volumes
-```
-
 ## Makefile
 
 ```shell
@@ -40,12 +19,28 @@ Usage:
   basht             Run interactive shell in target
   psqls             Connect to source
   psqlt             Connect to target
-  pgbench           Run pgbench on source
-  pgbenchdrop       Drop tables created by pgbench
+  pgdata            Run pgbench to create data
+  pgdatadrop        Drop tables created by pgbench
   pgpub             Create publication
   pgpubdrop         Drop publication
   pgsub             Create subscription
   pgsubdrop         Drop subscription
+```
+
+## Flow
+
+```shell
+# start both database instances
+→ make start
+
+# create schema in both instances, populate data into source
+→ make pgdata
+
+# create publication in source
+→ make pgpub
+
+# create subscription in target
+→ make pgsub
 ```
 
 ## Resources
