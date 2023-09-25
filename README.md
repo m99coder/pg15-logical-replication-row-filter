@@ -48,6 +48,6 @@ Usage:
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
 - <https://peterevans.dev/posts/how-to-wait-for-container-x-before-starting-y/>
 - <https://www.cloudbees.com/blog/tuning-postgresql-with-pgbench>
-- <https://www.postgresql.org/docs/current/pgbench.html>
-- <https://www.postgresql.org/docs/current/logical-replication-row-filter.html>
+- <https://www.postgresql.org/docs/15/pgbench.html>
+- <https://www.postgresql.org/docs/15/logical-replication.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
