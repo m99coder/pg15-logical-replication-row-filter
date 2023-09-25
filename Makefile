@@ -65,3 +65,12 @@ pgsub: ## Create subscription
 .PHONY: pgsubdrop
 pgsubdrop: ## Drop subscription
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -c 'DROP SUBSCRIPTION IF EXISTS sub_bid_1' -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: prepare
+prepare: pgdata pgpub ## Prepare data and publication
+
+.PHONY: replicate
+replicate: pgsub ## Create subscription and run replication
+
+.PHONY: reset
+reset: pgsubdrop pgpubdrop pgdatadrop ## Reset everything
