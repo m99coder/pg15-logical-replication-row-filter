@@ -22,3 +22,11 @@ logs: ## Show service logs
 .PHONY: ps
 ps: ## Show running services
 	docker compose ps
+
+.PHONY: psqls
+psqls: ## Connect to source
+	PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p $${SOURCE_PORT} -U $${POSTGRES_USER} $${POSTGRES_DB}
+
+.PHONY: psqlt
+psqlt: ## Connect to target
+	PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p $${TARGET_PORT} -U $${POSTGRES_USER} $${POSTGRES_DB}
