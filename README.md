@@ -40,5 +40,4 @@ Usage:
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
-- <https://collabnix.com/getting-started-with-docker-and-postgresql/>
-- <https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/>
+- <https://github.com/peter-evans/docker-compose-healthcheck>

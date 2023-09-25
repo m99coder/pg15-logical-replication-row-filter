@@ -14,6 +14,11 @@ services:
     ports:
       - ${SOURCE_PORT}:5432
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   pg15-repl-target:
     build:
       context: .
@@ -29,6 +34,11 @@ services:
     ports:
       - ${TARGET_PORT}:5432
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   source:
   target:
