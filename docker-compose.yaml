@@ -21,6 +21,7 @@ services:
       - ${PWD}/postgres.conf:/etc/postgresql/postgres.conf
       - ${PWD}/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ${PWD}/sql:/opt/sql
+      - ${PWD}/bench:/opt/bench
     networks:
       - pg15-repl
     restart: unless-stopped
@@ -54,6 +55,7 @@ services:
       - ${PWD}/postgres.conf:/etc/postgresql/postgres.conf
       - ${PWD}/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ${PWD}/sql:/opt/sql
+      - ${PWD}/bench:/opt/bench
     networks:
       - pg15-repl
     restart: unless-stopped

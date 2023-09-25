@@ -17,13 +17,14 @@ Usage:
   basht             Run interactive shell in target
   psqls             Connect to source
   psqlt             Connect to target
+  pgschema          Run pgbench to create schema
   pgdata            Run pgbench to create data
   pgdatadrop        Drop tables created by pgbench
   pgpub             Create publication
   pgpubdrop         Drop publication
   pgsub             Create subscription
   pgsubdrop         Drop subscription
-  prepare           Prepare data and publication
+  prepare           Prepare schema, data and publication
   replicate         Create subscription and run replication
   reset             Reset everything
 ```
