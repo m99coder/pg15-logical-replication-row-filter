@@ -1,8 +1,6 @@
 version: "3.8"
 services:
   pg15-repl-source:
-    build:
-      context: .
     image: postgres:${PGVERSION}
     container_name: ${CONTAINER_NAME_PREFIX}-source
     command:
@@ -35,8 +33,6 @@ services:
       timeout: 5s
       retries: 5
   pg15-repl-target:
-    build:
-      context: .
     image: postgres:${PGVERSION}
     container_name: ${CONTAINER_NAME_PREFIX}-target
     command:

@@ -26,6 +26,7 @@ Usage:
   pgsubdrop         Drop subscription
   prepare           Prepare schema, data and publication
   replicate         Create subscription and run replication
+  validate          Validate replication
   reset             Reset everything
 ```
 
@@ -43,12 +44,21 @@ make prepare
 # create subscription and run replication
 make replicate
 
+# validate replication
+make validate
+
 # reset data in both instances
 make reset
 
 # stop both database instances
 make stop
 ```
+
+## pgbench
+
+In order to utilize two database instances with distinct data, the initialization steps for pgbench as well as the actual benchmark queries had to be modified.
+
+Even identifiers are populated to the source, odd identifiers to the target.
 
 ## Postgres
 
