@@ -17,7 +17,7 @@ Usage:
   basht             Run interactive shell in target
   psqls             Connect to source
   psqlt             Connect to target
-  pgschema          Run pgbench to create schema
+  pginit            Run initialization for pgbench
   pgdata            Run pgbench to create data
   pgdatadrop        Drop tables created by pgbench
   pgpub             Create publication
@@ -167,6 +167,7 @@ stats_reset       |
 - <https://peterevans.dev/posts/how-to-wait-for-container-x-before-starting-y/>
 - <https://www.cloudbees.com/blog/tuning-postgresql-with-pgbench>
 - <https://www.postgresql.org/docs/15/pgbench.html>
+- <https://github.com/postgres/postgres/blob/master/src/bin/pgbench/pgbench.c#L5041>
 - <https://www.postgresql.org/docs/15/logical-replication.html>
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>

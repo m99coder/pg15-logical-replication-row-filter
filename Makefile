@@ -39,10 +39,12 @@ psqls: ## Connect to source
 psqlt: ## Connect to target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
-.PHONY: pgschema
-pgschema: ## Run pgbench to create schema
-	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s $${PGBENCH_SCALE} -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
-	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -s $${PGBENCH_SCALE} -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+.PHONY: pginit
+pginit: ## Run initialization for pgbench
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I t -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/pgbench_init_pub.sql"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I t -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/pgbench_init_sub.sql"
 
 .PHONY: pgdata
 pgdata: ## Run pgbench to create data
@@ -71,7 +73,7 @@ pgsubdrop: ## Drop subscription
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -c 'DROP SUBSCRIPTION IF EXISTS sub_bid_1' -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
 .PHONY: prepare
-prepare: pgschema pgdata pgpub ## Prepare schema, data and publication
+prepare: pginit pgdata pgpub ## Prepare schema, data and publication
 
 .PHONY: replicate
 replicate: pgsub ## Create subscription and run replication
