@@ -230,4 +230,3 @@ stats_reset       |
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
 - <https://andrewbridges.org/implementing-postgres-logical-replication/>
-- <https://www.postgresql.org/docs/15/sql-lock.html>
