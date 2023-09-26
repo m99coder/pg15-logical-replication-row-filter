@@ -2,7 +2,13 @@
 
 > PoC for using the Postgres 15 built-in row filter for logical replication
 
+The scenario this PoC tries to simulate and demonstrate is as follows: We set up a logical replication with a row filter, populate two database instances with different data and check if the replication is valid by comparing some numbers between the source and the target of the operation.
+
+As primary key and row filter for the logical replication, we use the criteria `bid = 1`. Logical replication requires the row filter criteria to be part of the primary key for the related table. Another requirement is non-overlapping data on both database instances. So we had to tweak `pgbench` a bit, which is used for the data population part and traffic simulation part. Even identifiers are entered in the source, odd identifiers in the target.
+
 ## Makefile
+
+Here is a trimmed down list of the most important make targets:
 
 ```text
 Usage:
@@ -13,20 +19,7 @@ Usage:
   clean             Clean up services
   logs              Show service logs
   ps                Show running services
-  bashs             Run interactive shell in source
-  basht             Run interactive shell in target
-  psqls             Connect to source
-  psqlt             Connect to target
-  pginitpub         Init pgbench and publication in source
-  pginitsub         Init pgbench and subscription in target
-  pginit            Init pgbench, publication, and subscription
-  pgdatapub         Run pgbench to create data in source
-  pgdatasub         Run pgbench to create data in target
-  pgdatadrop        Drop tables created by pgbench
-  pgpub             Create publication
-  pgpubdrop         Drop publication
-  pgsub             Create subscription
-  pgsubdrop         Drop subscription
+  …
   prepare           Prepare schema, publication, and subscription
   run               Generate data in both instances
   validate          Validate replication
@@ -34,6 +27,15 @@ Usage:
 ```
 
 ## Flow
+
+These are the steps to run the scenario:
+
+1. Start both instances in containers and apply the necessary configuration to them (`postgres.conf` is mounted)
+2. Prepare both instances by creating the schema, populating the base data and setting up the publication as well as the subscription
+3. Run the benchmark queries to simulate traffic and create entries for `bid = 1` which are replicated on the fly
+4. Validate the results by comparing entry counts and balances for `bid = 1` on the source and the target
+5. Reset data, publication, and subscription on both instances
+6. Remove containers, volumes, and network
 
 ```shell
 # start both database instances
@@ -56,14 +58,6 @@ make reset -j 3
 # stop both database instances
 make stop
 ```
-
-## pgbench
-
-In order to use two database instances with different data, the initialization steps for pgbench and the actual benchmark queries had to be changed.
-
-Even identifiers are entered in the source, odd identifiers in the target.
-
-Additionally, the primary keys had to be adjusted a bit to contain `bid` in each case.
 
 ## Postgres
 
@@ -241,7 +235,3 @@ _tbw._
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
 - <https://andrewbridges.org/implementing-postgres-logical-replication/>
 - <https://www.postgresql.org/docs/15/sql-lock.html>
-
-## Todos
-
-- [ ] Populate data to source and target in parallel
