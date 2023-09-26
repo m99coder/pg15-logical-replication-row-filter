@@ -27,7 +27,7 @@ Usage:
   pgpubdrop         Drop publication
   pgsub             Create subscription
   pgsubdrop         Drop subscription
-  pgreplicat        Set up publication and subscription
+  pgreplicate       Set up publication and subscription
   prepare           Prepare schema, publication, and subscription
   run               Generate data in both instances
   validate          Validate replication
