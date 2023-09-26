@@ -230,4 +230,4 @@ stats_reset       |
 - <https://www.postgresql.org/docs/15/logical-replication.html>
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
-- <https://wiki.postgresql.org/wiki/Streaming_Replication>
+- <https://andrewbridges.org/implementing-postgres-logical-replication/>
