@@ -61,6 +61,18 @@ make stop
 
 ## Postgres
 
+```sql
+-- on source
+SELECT * FROM pg_publication;
+SELECT * FROM pg_replication_slots;
+
+-- \dRp+
+-- \d pgbench_branches
+
+-- on target
+SELECT * FROM pg_subscription;
+```
+
 ### Publication
 
 ```shell
