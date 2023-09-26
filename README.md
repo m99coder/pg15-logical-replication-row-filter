@@ -37,6 +37,8 @@ These are the steps to run the scenario:
 5. Reset data, publication, and subscription on both instances
 6. Remove containers, volumes, and network
 
+To achieve parallelism, the usage of `make` with the `-j` argument is important — optional for `prepare` and `reset`, but mandatory for `run`.
+
 ```shell
 # start both database instances
 make start
@@ -98,6 +100,18 @@ Tables:
     "public.pgbench_branches" WHERE (bid = 1)
     "public.pgbench_history" WHERE (bid = 1)
     "public.pgbench_tellers" WHERE (bid = 1)
+
+demo=# \d pgbench_branches
+              Table "public.pgbench_branches"
+  Column  |     Type      | Collation | Nullable | Default
+----------+---------------+-----------+----------+---------
+ bid      | integer       |           | not null |
+ bbalance | integer       |           |          |
+ filler   | character(88) |           |          |
+Indexes:
+    "pgbench_branches_pkey" PRIMARY KEY, btree (bid)
+Publications:
+    "pub_bid_1" WHERE (bid = 1)
 
 demo=# SELECT * FROM pg_replication_slots;
 -[ RECORD 1 ]-------+-----------
