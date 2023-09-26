@@ -56,9 +56,9 @@ make stop
 
 ## pgbench
 
-In order to utilize two database instances with distinct data, the initialization steps for pgbench as well as the actual benchmark queries had to be modified.
+In order to use two database instances with different data, the initialization steps for pgbench and the actual benchmark queries had to be changed.
 
-Even identifiers are populated to the source, odd identifiers to the target.
+Even identifiers are entered in the source, odd identifiers in the target.
 
 ## Postgres
 
