@@ -219,10 +219,6 @@ sync_error_count  | 0
 stats_reset       |
 ```
 
-## Locking
-
-_tbw._
-
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
