@@ -179,7 +179,22 @@ pg_current_wal_insert_lsn | 0/5DBC7178
 demo=# SELECT pg_current_wal_lsn();
 -[ RECORD 1 ]------+-----------
 pg_current_wal_lsn | 0/5DBC7178
+
+demo=# SELECT
+    confirmed_flush_lsn,
+    pg_current_wal_lsn(),
+    (pg_current_wal_lsn() - confirmed_flush_lsn) AS lsn_distance
+FROM
+    pg_catalog.pg_replication_slots
+WHERE
+    slot_name = 'sub_bid_1';
+ confirmed_flush_lsn | pg_current_wal_lsn | lsn_distance
+---------------------+--------------------+--------------
+ 0/5DBC7178          | 0/5DBC7178         |            0
+(1 row)
 ```
+
+The replication lag can be determined by subtracting `pg_current_wal_lsn()` from the `confirmed_flush_lsn` value of the replication slot in use.
 
 ### Target
 
