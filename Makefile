@@ -39,16 +39,27 @@ psqls: ## Connect to source
 psqlt: ## Connect to target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
-.PHONY: pginit
-pginit: ## Run initialization for pgbench
+.PHONY: pginitpub
+pginitpub: ## Init pgbench and publication in source
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I dtvp -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/pgbench_init_pub.sql"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/repl_pub.sql"
+
+.PHONY: pginitsub
+pginitsub: ## Init pgbench and subscription in target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -i -I dtvp -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/pgbench_init_sub.sql"
+	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB} < /opt/sql/repl_sub.sql"
 
-.PHONY: pgdata
-pgdata: ## Run pgbench to create data
+.PHONY: pginit
+pginit: pginitpub pginitsub ## Init pgbench, publication, and subscription
+
+.PHONY: pgdatapub
+pgdatapub: ## Run pgbench to create data in source
 	docker exec -it $${CONTAINER_NAME_PREFIX}-source /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -s $${PGBENCH_SCALE} -f /opt/bench/pub.bench --verbose-errors -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
+
+.PHONY: pgdatasub
+pgdatasub: ## Run pgbench to create data in target
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) pgbench -c 10 -j 2 -t 10000 -s $${PGBENCH_SCALE} -f /opt/bench/sub.bench --verbose-errors -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
 .PHONY: pgdatadrop
@@ -72,11 +83,14 @@ pgsub: ## Create subscription
 pgsubdrop: ## Drop subscription
 	docker exec -it $${CONTAINER_NAME_PREFIX}-target /bin/bash -c "PGPASSWORD=$$(echo $$POSTGRES_PASSWORD) psql -c 'DROP SUBSCRIPTION IF EXISTS sub_bid_1' -h localhost -p 5432 -U $${POSTGRES_USER} $${POSTGRES_DB}"
 
-.PHONY: prepare
-prepare: pginit pgdata pgpub ## Prepare schema, data and publication
+.PHONY: pgreplicate
+pgreplicat: pgpub pgsub ## Set up publication and subscription
 
-.PHONY: replicate
-replicate: pgsub ## Create subscription and run replication
+.PHONY: prepare
+prepare: pginit pgreplicate ## Prepare schema, publication, and subscription
+
+.PHONY: run
+run: pgdatapub pgdatasub ## Generate data in both instances
 
 .PHONY: validate
 validate: ## Validate replication

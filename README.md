@@ -17,15 +17,19 @@ Usage:
   basht             Run interactive shell in target
   psqls             Connect to source
   psqlt             Connect to target
-  pginit            Run initialization for pgbench
-  pgdata            Run pgbench to create data
+  pginitpub         Init pgbench and publication in source
+  pginitsub         Init pgbench and subscription in target
+  pginit            Init pgbench, publication, and subscription
+  pgdatapub         Run pgbench to create data in source
+  pgdatasub         Run pgbench to create data in target
   pgdatadrop        Drop tables created by pgbench
   pgpub             Create publication
   pgpubdrop         Drop publication
   pgsub             Create subscription
   pgsubdrop         Drop subscription
-  prepare           Prepare schema, data and publication
-  replicate         Create subscription and run replication
+  pgreplicat        Set up publication and subscription
+  prepare           Prepare schema, publication, and subscription
+  run               Generate data in both instances
   validate          Validate replication
   reset             Reset everything
 ```
@@ -37,18 +41,18 @@ Usage:
 make start
 
 # create schema in both instances
-# populate data into source
 # create publication
-make prepare
+# create subscription
+make prepare -j 2
 
-# create subscription and run replication
-make replicate
+# populate data in both instances
+make run -j 2
 
 # validate replication
 make validate
 
 # reset data in both instances
-make reset
+make reset -j 3
 
 # stop both database instances
 make stop
@@ -59,6 +63,8 @@ make stop
 In order to use two database instances with different data, the initialization steps for pgbench and the actual benchmark queries had to be changed.
 
 Even identifiers are entered in the source, odd identifiers in the target.
+
+Additionally, the primary keys had to be adjusted a bit to contain `bid` in each case.
 
 ## Postgres
 
@@ -220,6 +226,10 @@ sync_error_count  | 0
 stats_reset       |
 ```
 
+## Locking
+
+_tbw._
+
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
@@ -231,3 +241,8 @@ stats_reset       |
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
 - <https://andrewbridges.org/implementing-postgres-logical-replication/>
+- <https://www.postgresql.org/docs/15/sql-lock.html>
+
+## Todos
+
+- [ ] Populate data to source and target in parallel
