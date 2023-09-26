@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   pg15-repl-source:
-    image: postgres:${PGVERSION}
+    image: postgres:${PGVERSION}-alpine
     container_name: ${CONTAINER_NAME_PREFIX}-source
     command:
       [
@@ -33,7 +33,7 @@ services:
       timeout: 5s
       retries: 5
   pg15-repl-target:
-    image: postgres:${PGVERSION}
+    image: postgres:${PGVERSION}-alpine
     container_name: ${CONTAINER_NAME_PREFIX}-target
     command:
       [
