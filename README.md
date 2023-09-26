@@ -105,29 +105,6 @@ confirmed_flush_lsn | 1/28871618
 wal_status          | reserved
 safe_wal_size       |
 two_phase           | f
-
-demo=# SELECT * FROM pg_stat_replication;
--[ RECORD 1 ]----+------------------------------
-pid              | 658
-usesysid         | 10
-usename          | demo
-application_name | sub_bid_1
-client_addr      | 192.168.112.3
-client_hostname  |
-client_port      | 56556
-backend_start    | 2023-09-25 18:41:10.351454+00
-backend_xmin     |
-state            | streaming
-sent_lsn         | 1/28871618
-write_lsn        | 1/28871618
-flush_lsn        | 1/28871618
-replay_lsn       | 1/28871618
-write_lag        |
-flush_lag        |
-replay_lag       |
-sync_priority    | 0
-sync_state       | async
-reply_time       | 2023-09-25 18:44:53.765747+00
 ```
 
 ### Subscription
@@ -149,22 +126,79 @@ subconninfo      | host=pg15-repl-source dbname=demo user=demo password=demo app
 subslotname      | sub_bid_1
 subsynccommit    | off
 subpublications  | {pub_bid_1}
+```
 
-demo=# SELECT * FROM pg_stat_subscription;
+## Replication Stats
+
+```sql
+-- on source
+SELECT * FROM pg_stat_replication WHERE application_name = 'sub_bid_1';
+SELECT pg_current_wal_flush_lsn();
+SELECT pg_current_wal_insert_lsn();
+SELECT pg_current_wal_lsn();
+
+-- on target
+SELECT * FROM pg_stat_subscription WHERE subname = 'sub_bid_1';
+SELECT * FROM pg_stat_subscription_stats WHERE subname = 'sub_bid_1';
+```
+
+### Source
+
+```shell
+demo=# SELECT * FROM pg_stat_replication WHERE application_name = 'sub_bid_1';
+-[ RECORD 1 ]----+------------------------------
+pid              | 146
+usesysid         | 10
+usename          | demo
+application_name | sub_bid_1
+client_addr      | 192.168.176.2
+client_hostname  |
+client_port      | 33092
+backend_start    | 2023-09-26 08:26:03.334842+00
+backend_xmin     |
+state            | streaming
+sent_lsn         | 0/5DBC7178
+write_lsn        | 0/5DBC7178
+flush_lsn        | 0/5DBC7178
+replay_lsn       | 0/5DBC7178
+write_lag        |
+flush_lag        |
+replay_lag       |
+sync_priority    | 0
+sync_state       | async
+reply_time       | 2023-09-26 08:58:42.279064+00
+
+demo=# SELECT pg_current_wal_flush_lsn();
+-[ RECORD 1 ]------------+-----------
+pg_current_wal_flush_lsn | 0/5DBC7178
+
+demo=# SELECT pg_current_wal_insert_lsn();
+-[ RECORD 1 ]-------------+-----------
+pg_current_wal_insert_lsn | 0/5DBC7178
+
+demo=# SELECT pg_current_wal_lsn();
+-[ RECORD 1 ]------+-----------
+pg_current_wal_lsn | 0/5DBC7178
+```
+
+### Target
+
+```shell
+demo=# SELECT * FROM pg_stat_subscription WHERE subname = 'sub_bid_1';
 -[ RECORD 1 ]---------+------------------------------
-subid                 | 16445
+subid                 | 16404
 subname               | sub_bid_1
-pid                   | 623
+pid                   | 143
 relid                 |
-received_lsn          | 1/28871700
-last_msg_send_time    | 2023-09-25 18:50:35.481432+00
-last_msg_receipt_time | 2023-09-25 18:50:35.481557+00
-latest_end_lsn        | 1/28871700
-latest_end_time       | 2023-09-25 18:50:35.481432+00
+received_lsn          | 0/5DBC7178
+last_msg_send_time    | 2023-09-26 09:03:43.498128+00
+last_msg_receipt_time | 2023-09-26 09:03:43.498844+00
+latest_end_lsn        | 0/5DBC7178
+latest_end_time       | 2023-09-26 09:03:43.498128+00
 
-demo=# SELECT * FROM pg_stat_subscription_stats;
+demo=# SELECT * FROM pg_stat_subscription_stats WHERE subname = 'sub_bid_1';
 -[ RECORD 1 ]-----+----------
-subid             | 16445
+subid             | 16404
 subname           | sub_bid_1
 apply_error_count | 0
 sync_error_count  | 0
@@ -181,3 +215,4 @@ stats_reset       |
 - <https://www.postgresql.org/docs/15/logical-replication.html>
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
+- <https://wiki.postgresql.org/wiki/Streaming_Replication>
