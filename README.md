@@ -6,6 +6,14 @@ The scenario this PoC tries to simulate and demonstrate is as follows: We set up
 
 As primary key and row filter for the logical replication, we use the criteria `bid = 1`. Logical replication requires the row filter criteria to be part of the primary key for the related table. Another requirement is non-overlapping data on both database instances. So we had to tweak `pgbench` a bit, which is used for the data population part and traffic simulation part. Even identifiers are entered in the source, odd identifiers in the target.
 
+## Important files
+
+- [sql/pgbench_init_pub.sql](./sql/pgbench_init_pub.sql), [sql/pgbench_init_sub.sql](./sql/pgbench_init_sub.sql): Init pgbench tables `pgbench_branches`, `pgbench_tellers`, and `pgbench_accounts` with entries where the primary keys follow the even/odd pattern for the source and the target. Additionally extend the primary keys in the tables `pgbench_accounts` and `pgbench_tellers` to contain `bid` as well. _The scale factor of 50 is applied as static value in these files and needs to be adjusted if the environment variable `PGBENCH_SCALE` is modified._
+- [sql/repl_pub.sql](./sql/repl_pub.sql): Create publication for all pgbench tables using the row filter criteria `bid = 1` on the source.
+- [sql/repl_sub.sql](./sql/repl_sub.sql): Create subscription for the publication in the target.
+- [bench/pub.bench](./bench/pub.bench), [bench/sub.bench](./bench/sub.bench): Benchmark scripts to use with modified identifiers following the even/odd pattern for the source and the target.
+- [sql/validate.sql](./sql/validate.sql): Queries to validate replication success by comparing balance values and sums, as well as the count of history entries for every row with a reference to `bid = 1`.
+
 ## Makefile
 
 Here is a trimmed down list of the most important make targets:
