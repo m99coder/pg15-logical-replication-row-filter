@@ -253,6 +253,93 @@ sync_error_count  | 0
 stats_reset       |
 ```
 
+## Concept
+
+<https://www.postgresql.org/docs/15/logical-replication.html>
+
+> Logical replication of a table typically starts with taking a snapshot of the data on the publisher database and copying that to the subscriber. Once that is done, the changes on the publisher are sent to the subscriber as they occur in real-time. The subscriber applies the data in the same order as the publisher so that transactional consistency is guaranteed for publications within a single subscription.
+
+Publications
+
+> Publications can choose to limit the changes they produce to any combination of `INSERT`, `UPDATE`, `DELETE`, and `TRUNCATE`, similar to how triggers are fired by particular event types. By default, all operation types are replicated. These publication specifications apply only for DML operations; they do not affect the initial data synchronization copy. Row filters have no effort for `TRUNCATE`.
+>
+> A published table must have a “replica identity” configured in order to be able to replicate `UPDATE` and `DELETE` operations, so that appropriate rows to update or delete can be identified on the subscriber side. By default, this is the primary key, if there is one. Another unique index (with certain additional requirements) can also be set to be the replica identity.
+
+Subscriptions
+
+> Each subscription will receive changes via one replication slot. Additional replication slots may be required for the initial data synchronization of pre-existing table data and those will be dropped at the end of data synchronization.
+>
+> The subscription is added using `CREATE SUBSCRIPTION` and can be stopped/resumed at any time using the `ALTER SUBSCRIPTION` command and removed using `DROP SUBSCRIPTION`.
+>
+> The schema definitions are not replicated, and the published tables must exist on the subscriber. Only regular tables may be the target of replication. For example, you can’t replicate to a view.
+>
+> Normally, the remote replication slot is created automatically when the subscription is created using `CREATE SUBSCRIPTION` and it is dropped automatically when the subscription is dropped using `DROP SUBSCRIPTION`.
+
+Row Filters
+
+> If a published table sets a row filter, a row is replicated only if its data satisfies the row filter expression. This allows a set of tables to be partially replicated. The row filter is defined per table. Use a `WHERE` clause after the table name for each published table that requires data to be filtered out. The `WHERE` clause must be enclosed by parentheses.
+>
+> Row filters are applied before publishing the changes. If the row filter evaluates to `false` or `NULL` then the row is not replicated. The `WHERE` clause expression is evaluated with the same role used for the replication connection. Row filters have no effect for `TRUNCATE` command.
+>
+> If a publication publishes `UPDATE` or `DELETE` operations, the row filter WHERE clause must contain only columns that are covered by the replica identity. If a publication publishes only `INSERT` operations, the row filter `WHERE` clause can use any column.
+>
+> Whenever an `UPDATE` is processed, the row filter expression is evaluated for both the old and new row (i.e. using the data before and after the update). If both evaluations are `true`, it replicates the `UPDATE` change. If both evaluations are `false`, it doesn’t replicate the change. If only one of the old/new rows matches the row filter expression, the `UPDATE` is transformed to `INSERT` or `DELETE`, to avoid any data inconsistency.
+>
+> If the subscription requires copying pre-existing table data and a publication contains `WHERE` clauses, only data that satisfies the row filter expressions is copied to the subscriber.
+
+Column Lists
+
+> Each publication can optionally specify which columns of each table are replicated to subscribers. The table on the subscriber side must have at least all the columns that are published. If no column list is specified, then all columns on the publisher are replicated.
+
+Conflicts
+
+> Logical replication behaves similarly to normal DML operations in that the data will be updated even if it was changed locally on the subscriber node. If incoming data violates any constraints the replication will stop. This is referred to as a _conflict_. When replicating `UPDATE` or `DELETE` operations, missing data will not produce a conflict and such operations will simply be skipped.
+>
+> A conflict will produce an error and will stop the replication; it must be resolved manually by the user. Details about the conflict can be found in the subscriber’s server log. The resolution can be done either by changing data or permissions on the subscriber so that it does not conflict with the incoming change or by skipping the transaction that conflicts with the existing data.
+>
+> The transaction that produced the conflict can be skipped by using `ALTER SUBSCRIPTION ... SKIP` with the finish LSN. The finish LSN could be an LSN at which the transaction is committed or prepared on the publisher. Alternatively, the transaction can also be skipped by calling the `pg_replication_origin_advance()` function. Before using this function, the subscription needs to be disabled temporarily either by `ALTER SUBSCRIPTION ... DISABLE` or, the subscription can be used with the `disable_on_error` option. Then, you can use `pg_replication_origin_advance()` function with the `node_name` and the next LSN of the finish LSN. The current position of origins can be seen in the `pg_replication_origin_status` system view. Please note that skipping the whole transaction includes skipping changes that might not violate any constraint. This can easily make the subscriber inconsistent.
+
+Restrictions:
+
+- The database schema and DDL commands are not replicated.
+- Sequence data is not replicated.
+- Replication of `TRUNCATE` commands is supported, but some care must be taken when truncating groups of tables connected by foreign keys.
+- Large objects are not replicated.
+- Replication is only supported by tables, including partitioned tables.
+- When replicating between partitioned tables, the actual replication originates, by default, from the leaf partitions on the publisher, so partitions on the publisher must also exist on the subscriber as valid target tables.
+
+Architecture
+
+> Logical replication starts by copying a snapshot of the data on the publisher database. Once that is done, changes on the publisher are sent to the subscriber as they occur in real time. The subscriber applies data in the order in which commits were made on the publisher so that transactional consistency is guaranteed for the publications within any single subscription.
+>
+> Logical replication is built with an architecture similar to physical streaming replication. It is implemented by “walsender” and “apply” processes. The walsender process starts logical decoding of the WAL and loads the standard logical decoding plugin (`pgoutput`). The plugin transforms the changes read from WAL to the logical replication protocol and filters the data according to the publication specification. The data is then continuously transferred using the streaming replication protocol to the apply worker, which maps the data to local tables and applies the individual changes as they are received, in correct transactional order.
+>
+> The apply process on the subscriber database always runs with `session_replication_role` set to `replica`. This means that, by default, triggers and rules will not fire on a subscriber.
+
+Initial Snapshot
+
+> The initial data in existing subscribed tables are snapshotted and copied in a parallel instance of a special kind of apply process. This process will create its own replication slot and copy the existing data. As soon as the copy is finished the table contents will become visible to other backends. Once existing data is copied, the worker enters synchronization mode, which ensures that the table is brought up to a synchronized state with the main apply process by streaming any changes that happened during the initial data copy using standard logical replication. During this synchronization phase, the changes are applied and committed in the same order as they happened on the publisher. Once synchronization is done, control of the replication of the table is given back to the main apply process where replication continues as normal.
+
+Monitoring
+
+> The monitoring information about subscription is visible in `pg_stat_subscription`. This view contains one row for every subscription worker. A subscription can have zero or more active subscription workers depending on its state.
+>
+> Normally, there is a single apply process running for an enabled subscription. A disabled subscription or a crashed subscription will have zero rows in this view. If the initial data synchronization of any table is in progress, there will be additional workers for the tables being synchronized.
+
+Configuration Settings
+
+> On the publisher side, `wal_level` must be set to `logical`, and `max_replication_slots` must be set to at least the number of subscriptions expected to connect, plus some reserve for table synchronization. And `max_wal_senders` should be set to at least the same as `max_replication_slots` plus the number of physical replicas that are connected at the same time.
+>
+> `max_replication_slots` must also be set on the subscriber. It should be set to at least the number of subscriptions that will be added to the subscriber, plus some reserve for table synchronization. `max_logical_replication_workers` must be set to at least the number of subscriptions, again plus some reserve for the table synchronization. Additionally the `max_worker_processes` may need to be adjusted to accommodate for replication workers, at least `max_logical_replication_workers + 1`. Note that some extensions and parallel queries also take worker slots from `max_worker_processes`.
+
+## Pause and Resume
+
+_tbw._
+
+## Error Scenarios
+
+_tbw._
+
 ## Resources
 
 - <https://1kevinson.com/how-to-create-a-postgres-database-in-docker/>
@@ -261,6 +348,8 @@ stats_reset       |
 - <https://www.postgresql.org/docs/15/pgbench.html>
 - <https://github.com/postgres/postgres/blob/master/src/bin/pgbench/pgbench.c#L5041>
 - <https://www.postgresql.org/docs/15/logical-replication.html>
+- <https://www.postgresql.org/docs/15/sql-altertable.html#SQL-ALTERTABLE-REPLICA-IDENTITY>
+- <https://www.postgresql.org/docs/15/sql-altersubscription.html>
 - <https://www.postgresql.org/docs/15/monitoring-stats.html>
 - <https://matthewmoisen.com/blog/posgresql-logical-replication/>
 - <https://andrewbridges.org/implementing-postgres-logical-replication/>
