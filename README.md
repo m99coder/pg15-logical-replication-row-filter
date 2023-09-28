@@ -435,7 +435,25 @@ make reset -j 3
 
 ### Target goes down during replication
 
-_tbw._
+Start replication as usual.
+
+```shell
+make prepare -j 2
+make run -j 2
+```
+
+While the replication runs, pause the target container and unpause it later.
+
+```shell
+docker compose pause pg15-repl-target
+docker compose unpause pg15-repl-target
+```
+
+The logical replication resumes where it stopped and we get consistent data eventually.
+
+```shell
+make validate
+```
 
 ## Resources
 
