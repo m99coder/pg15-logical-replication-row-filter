@@ -350,6 +350,7 @@ ALTER SUBSCRIPTION sub_bid_1 DISABLE;
 Validate the current state.
 
 ```shell
+# we see inconsistent data
 make validate
 ```
 
@@ -362,6 +363,7 @@ ALTER SUBSCRIPTION sub_bid_1 ENABLE;
 Validate the final state.
 
 ```shell
+# we see consistent data
 make validate
 ```
 
