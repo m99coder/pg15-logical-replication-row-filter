@@ -383,8 +383,8 @@ STATEMENT:  START_REPLICATION SLOT "sub_bid_1" LOGICAL 0/AC301478 (proto_version
 The logs for the target look similar to these.
 
 ```text
-LOG:  logical replication apply worker for subscription "sub_bid_1" will stop because the subscription was disabled
-LOG:  logical replication apply worker for subscription "sub_bid_1" has started
+      LOG:  logical replication apply worker for subscription "sub_bid_1" will stop because the subscription was disabled
+      LOG:  logical replication apply worker for subscription "sub_bid_1" has started
 ```
 
 From the logs we see that the subscription was paused and resumed on the target, where the source did create the replication slot automatically as soon as the subscription was re-enabled and started to stream transactions.
