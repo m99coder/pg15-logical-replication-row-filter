@@ -334,7 +334,62 @@ Configuration Settings
 
 ## Pause and Resume
 
-_tbw._
+First prepare tables and generate traffic.
+
+```shell
+make preapre -j 2
+make run -j 2
+```
+
+And while the script is running, disable the subscription on the target.
+
+```sql
+-- disable subscription
+ALTER SUBSCRIPTION sub_bid_1 DISABLE;
+```
+
+Validate the current state.
+
+```shell
+make validate
+```
+
+Re-enable the subscription on the target.
+
+```sql
+-- enable subscription
+ALTER SUBSCRIPTION sub_bid_1 ENABLE;
+```
+
+Validate the final state.
+
+```shell
+make validate
+```
+
+The logs for the source look similar to these.
+
+```text
+STATEMENT:  START_REPLICATION SLOT "pg_16436_sync_16420_7283766544888864797" LOGICAL 0/A54C8A68 (proto_version '3', publication_names '"pub_bid_1"')
+LOG:  0/AC301478 has been already streamed, forwarding to 0/AC30A0F0
+STATEMENT:  START_REPLICATION SLOT "sub_bid_1" LOGICAL 0/AC301478 (proto_version '3', publication_names '"pub_bid_1"')
+LOG:  starting logical decoding for slot "sub_bid_1"
+DETAIL:  Streaming transactions committing after 0/AC30A0F0, reading WAL from 0/A59D63F0.
+STATEMENT:  START_REPLICATION SLOT "sub_bid_1" LOGICAL 0/AC301478 (proto_version '3', publication_names '"pub_bid_1"')
+LOG:  logical decoding found consistent point at 0/A59D63F0
+DETAIL:  There are no running transactions.
+```
+
+The logs for the target look similar to these.
+
+```text
+LOG:  logical replication apply worker for subscription "sub_bid_1" will stop because the subscription was disabled
+LOG:  logical replication apply worker for subscription "sub_bid_1" has started
+```
+
+From the logs we see that the subscription was paused and resumed on the target, where the source did create the replication slot automatically as soon as the subscription was re-enabled and started to stream transactions.
+
+The final `make validate` shows that the data is still consistent afterwards.
 
 ## Error Scenarios
 
