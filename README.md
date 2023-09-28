@@ -344,7 +344,6 @@ make run -j 2
 And while the script is running, disable the subscription on the target.
 
 ```sql
--- disable subscription
 ALTER SUBSCRIPTION sub_bid_1 DISABLE;
 ```
 
@@ -357,7 +356,6 @@ make validate
 Re-enable the subscription on the target.
 
 ```sql
--- enable subscription
 ALTER SUBSCRIPTION sub_bid_1 ENABLE;
 ```
 
