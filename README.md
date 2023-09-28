@@ -265,6 +265,18 @@ Publications
 >
 > A published table must have a “replica identity” configured in order to be able to replicate `UPDATE` and `DELETE` operations, so that appropriate rows to update or delete can be identified on the subscriber side. By default, this is the primary key, if there is one. Another unique index (with certain additional requirements) can also be set to be the replica identity.
 
+```sql
+-- using default replica identity (primary key)
+ALTER TABLE pgbench_branches
+  REPLICA IDENTITY DEFAULT;
+
+-- using the given index
+ALTER TABLE pgbench_branches
+  REPLICA IDENTITY USING INDEX pgbench_branches_pkey;
+
+-- don’t use `FULL` as it means a lot of data in the WAL
+```
+
 Subscriptions
 
 > Each subscription will receive changes via one replication slot. Additional replication slots may be required for the initial data synchronization of pre-existing table data and those will be dropped at the end of data synchronization.
@@ -392,6 +404,12 @@ From the logs we see that the subscription was paused and resumed on the target,
 The final `make validate` shows that the data is still consistent afterwards.
 
 ## Error Scenarios
+
+### Violation of constraints
+
+_tbw._
+
+### Target goes down during replication
 
 _tbw._
 
