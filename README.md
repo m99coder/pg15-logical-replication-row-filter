@@ -8,7 +8,8 @@ As primary key and row filter for the logical replication, we use the criteria `
 
 ## Important files
 
-- [sql/pgbench_init_pub.sql](./sql/pgbench_init_pub.sql), [sql/pgbench_init_sub.sql](./sql/pgbench_init_sub.sql): Init pgbench tables `pgbench_branches`, `pgbench_tellers`, and `pgbench_accounts` with entries where the primary keys follow the even/odd pattern for the source and the target. Additionally extend the primary keys in the tables `pgbench_accounts` and `pgbench_tellers` to contain `bid` as well. _The scale factor of 50 is applied as static value in these files and needs to be adjusted if the environment variable `PGBENCH_SCALE` is modified._
+- [sql/pgbench_alter.sql](./sql/pgbench_alter.sql): Extend the primary keys in the tables `pgbench_accounts` and `pgbench_tellers` to contain `bid` as well.
+- [sql/pgbench_init_pub.sql](./sql/pgbench_init_pub.sql), [sql/pgbench_init_sub.sql](./sql/pgbench_init_sub.sql): Init pgbench tables `pgbench_branches`, `pgbench_tellers`, and `pgbench_accounts` with entries where the primary keys follow the even/odd pattern for the source and the target. _The scale factor of 50 is applied as static value in these files and needs to be adjusted if the environment variable `PGBENCH_SCALE` is modified._
 - [sql/repl_pub.sql](./sql/repl_pub.sql): Create publication for all pgbench tables using the row filter criteria `bid = 1` on the source.
 - [sql/repl_sub.sql](./sql/repl_sub.sql): Create subscription for the publication in the target.
 - [bench/pub.bench](./bench/pub.bench), [bench/sub.bench](./bench/sub.bench): Benchmark scripts to use with modified identifiers following the even/odd pattern for the source and the target.
@@ -349,7 +350,7 @@ Configuration Settings
 First prepare tables and generate traffic.
 
 ```shell
-make preapre -j 2
+make prepare -j 2
 make run -j 2
 ```
 
@@ -407,7 +408,30 @@ The final `make validate` shows that the data is still consistent afterwards.
 
 ### Violation of constraints
 
-_tbw._
+- Create pgbench schema
+- Insert conflicting entry in target
+- Create pgbench base data
+- Setup publication and subscription
+
+```shell
+make conflict
+```
+
+The logs for the target look similar to these.
+
+```text
+      LOG:  logical replication table synchronization worker for subscription "sub_bid_1", table "pgbench_branches" has started
+    ERROR:  duplicate key value violates unique constraint "pgbench_branches_pkey"
+   DETAIL:  Key (bid)=(1) already exists.
+  CONTEXT:  COPY pgbench_branches, line 1
+      LOG:  background worker "logical replication worker" (PID 10848) exited with exit code 1
+```
+
+As long as the subscription is enabled, the logical replication is retried.
+
+```shell
+make reset -j 3
+```
 
 ### Target goes down during replication
 
