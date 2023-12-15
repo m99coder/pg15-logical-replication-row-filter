@@ -6,6 +6,10 @@ The scenario this PoC tries to simulate and demonstrate is as follows: We set up
 
 As primary key and row filter for the logical replication, we use the criteria `bid = 1`. Logical replication requires the row filter criteria to be part of the primary key for the related table. Another requirement is non-overlapping data on both database instances. So we had to tweak `pgbench` a bit, which is used for the data population part and traffic simulation part. Even identifiers are entered in the source, odd identifiers in the target.
 
+## Prerequisites
+
+Make sure that the `.envrc` file is sourced before you start. You can do so by using [direnv](https://direnv.net/).
+
 ## Important files
 
 - [sql/pgbench_alter.sql](./sql/pgbench_alter.sql): Extend the primary keys in the tables `pgbench_accounts` and `pgbench_tellers` to contain `bid` as well.
